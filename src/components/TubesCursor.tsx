@@ -1,127 +1,145 @@
 import { useEffect, useRef } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import * as THREE from 'three';
 
-const tubeColors = ['#00ffff', '#ff00ff', '#8b5cf6', '#00ff88'];
-const lightColors = ['#83f36e', '#fe8a2e', '#ff008a', '#60aed5'];
-
-interface TubePoint {
-  position: THREE.Vector3;
-  velocity: THREE.Vector3;
-}
-
-function TubesEffect() {
-  const { viewport, pointer } = useThree();
-  const tubesRef = useRef<THREE.Group>(null);
-  const pointsRef = useRef<TubePoint[][]>([]);
-  const mouseRef = useRef(new THREE.Vector3());
-  const targetRef = useRef(new THREE.Vector3());
-
-  // Initialize tube points
-  useEffect(() => {
-    pointsRef.current = tubeColors.map(() => {
-      const points: TubePoint[] = [];
-      for (let i = 0; i < 20; i++) {
-        points.push({
-          position: new THREE.Vector3(0, 0, 0),
-          velocity: new THREE.Vector3(0, 0, 0),
-        });
-      }
-      return points;
-    });
-  }, []);
-
-  useFrame(() => {
-    // Update target position based on mouse
-    targetRef.current.x = (pointer.x * viewport.width) / 2;
-    targetRef.current.y = (pointer.y * viewport.height) / 2;
-    
-    // Smooth follow
-    mouseRef.current.lerp(targetRef.current, 0.15);
-
-    // Update each tube
-    pointsRef.current.forEach((tube, tubeIndex) => {
-      tube.forEach((point, pointIndex) => {
-        if (pointIndex === 0) {
-          // First point follows mouse with offset
-          const offset = new THREE.Vector3(
-            Math.sin(Date.now() * 0.002 + tubeIndex * 1.5) * 0.3,
-            Math.cos(Date.now() * 0.002 + tubeIndex * 1.5) * 0.3,
-            0
-          );
-          point.position.lerp(mouseRef.current.clone().add(offset), 0.3);
-        } else {
-          // Following points follow the previous point
-          const prev = tube[pointIndex - 1];
-          const dist = point.position.distanceTo(prev.position);
-          if (dist > 0.1) {
-            point.velocity.copy(prev.position).sub(point.position).multiplyScalar(0.2);
-            point.position.add(point.velocity);
-          }
-        }
-      });
-    });
-
-    // Update tube geometries
-    if (tubesRef.current) {
-      tubesRef.current.children.forEach((child, index) => {
-        if (child instanceof THREE.Line && pointsRef.current[index]) {
-          const positions = new Float32Array(pointsRef.current[index].length * 3);
-          pointsRef.current[index].forEach((point, i) => {
-            positions[i * 3] = point.position.x;
-            positions[i * 3 + 1] = point.position.y;
-            positions[i * 3 + 2] = point.position.z;
-          });
-          child.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-          child.geometry.attributes.position.needsUpdate = true;
-        }
-      });
-    }
-  });
-
-  return (
-    <group ref={tubesRef}>
-      {tubeColors.map((color, index) => (
-        <line key={index}>
-          <bufferGeometry>
-            <bufferAttribute
-              attach="attributes-position"
-              count={20}
-              array={new Float32Array(60)}
-              itemSize={3}
-            />
-          </bufferGeometry>
-          <lineBasicMaterial
-            color={color}
-            linewidth={3}
-            transparent
-            opacity={0.7}
-          />
-        </line>
-      ))}
-      {/* Light points at the head of each tube */}
-      {lightColors.map((color, index) => (
-        <pointLight
-          key={`light-${index}`}
-          color={color}
-          intensity={0.5}
-          distance={3}
-          position={[0, 0, 0]}
-        />
-      ))}
-    </group>
-  );
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  hue: number;
 }
 
 export default function TubesCursor() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Particle[]>([]);
+  const mouseRef = useRef({ x: -100, y: -100 });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resize();
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.current = { x: e.clientX, y: e.clientY };
+
+      for (let i = 0; i < 3; i++) {
+        particlesRef.current.push({
+          x: e.clientX + (Math.random() - 0.5) * 10,
+          y: e.clientY + (Math.random() - 0.5) * 10,
+          vx: (Math.random() - 0.5) * 2,
+          vy: (Math.random() - 0.5) * 2,
+          life: 0,
+          maxLife: 60 + Math.random() * 40,
+          hue: Math.random() * 60 + 170,
+        });
+      }
+
+      if (particlesRef.current.length > 500) {
+        particlesRef.current = particlesRef.current.slice(-500);
+      }
+    };
+
+    const animate = () => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      particlesRef.current = particlesRef.current.filter(particle => {
+        particle.life++;
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.vx *= 0.98;
+        particle.vy *= 0.98;
+
+        if (particle.life > particle.maxLife) return false;
+
+        const progress = particle.life / particle.maxLife;
+        const alpha = 1 - progress;
+        const size = (1 - progress) * 4 + 2;
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+
+        const gradient = ctx.createRadialGradient(
+          particle.x, particle.y, 0,
+          particle.x, particle.y, size * 2
+        );
+        gradient.addColorStop(0, `hsla(${particle.hue}, 100%, 60%, ${alpha})`);
+        gradient.addColorStop(0.5, `hsla(${particle.hue}, 100%, 50%, ${alpha * 0.5})`);
+        gradient.addColorStop(1, `hsla(${particle.hue}, 100%, 40%, 0)`);
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, size * 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+
+        return true;
+      });
+
+      if (particlesRef.current.length > 1) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.lineWidth = 2;
+
+        for (let i = 0; i < particlesRef.current.length - 1; i++) {
+          const p1 = particlesRef.current[i];
+          const p2 = particlesRef.current[i + 1];
+
+          const dx = p2.x - p1.x;
+          const dy = p2.y - p1.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 50) {
+            const alpha = (1 - p1.life / p1.maxLife) * (1 - distance / 50) * 0.5;
+
+            const gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+            gradient.addColorStop(0, `hsla(${p1.hue}, 100%, 60%, ${alpha})`);
+            gradient.addColorStop(1, `hsla(${p2.hue}, 100%, 60%, ${alpha})`);
+
+            ctx.strokeStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+
+        ctx.restore();
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('resize', resize);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
   return (
-    <div className="fixed inset-0 pointer-events-none z-30">
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 75 }}
-        style={{ background: 'transparent', pointerEvents: 'none' }}
-      >
-        <TubesEffect />
-      </Canvas>
-    </div>
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 pointer-events-none z-50"
+      style={{ mixBlendMode: 'screen' }}
+    />
   );
 }

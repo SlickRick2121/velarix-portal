@@ -141,24 +141,59 @@
     clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
   }
 
-  .project-card {
-    @apply relative overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm;
-    @apply transition-all duration-500 ease-out;
+  .glass-card {
+    @apply block relative;
+    perspective: 1000px;
+    transition: all 0.3s ease;
   }
 
-  .project-card::before {
-    content: '';
-    @apply absolute inset-0 opacity-0 transition-opacity duration-500;
-    background: var(--gradient-neon);
+  .glass-card-inner {
+    @apply relative rounded-2xl overflow-hidden;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    transition: transform 0.3s ease;
+    transform-style: preserve-3d;
   }
 
-  .project-card:hover::before {
-    @apply opacity-10;
+  .glass-card:hover .glass-card-inner {
+    box-shadow: 0 8px 32px 0 rgba(0, 255, 255, 0.3);
   }
 
-  .project-card:hover {
-    @apply border-primary/50 scale-[1.02];
-    box-shadow: var(--glow-cyan);
+  .glass-card-content {
+    position: relative;
+    z-index: 10;
+  }
+
+  .glass-card-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .glass-card:hover .glass-card-glow {
+    opacity: 1;
+  }
+
+  .glass-card-shine {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .glass-card:hover .glass-card-shine {
+    opacity: 1;
   }
 
   .scanline {
