@@ -11,19 +11,19 @@ interface ProjectCardProps {
 const colorClasses = {
   cyan: {
     border: 'hover:border-neon-cyan/60',
-    glow: 'group-hover:box-glow-cyan',
+    glow: 'hover:box-glow-cyan',
     text: 'text-neon-cyan',
     bg: 'bg-neon-cyan/10',
   },
   magenta: {
     border: 'hover:border-neon-magenta/60',
-    glow: 'group-hover:box-glow-magenta',
+    glow: 'hover:box-glow-magenta',
     text: 'text-neon-magenta',
     bg: 'bg-neon-magenta/10',
   },
   purple: {
     border: 'hover:border-neon-purple/60',
-    glow: 'group-hover:box-glow-purple',
+    glow: 'hover:box-glow-purple',
     text: 'text-neon-purple',
     bg: 'bg-neon-purple/10',
   },
@@ -41,8 +41,6 @@ export default function ProjectCard({ title, url, description, color, index }: P
       className={`group project-card p-6 block ${colors.border} ${colors.glow}`}
       style={{ 
         animationDelay: `${index * 100}ms`,
-        opacity: 0,
-        animation: `fade-in 0.8s ease-out ${index * 100}ms forwards`
       }}
     >
       {/* Header */}
@@ -50,11 +48,11 @@ export default function ProjectCard({ title, url, description, color, index }: P
         <div className={`p-3 rounded-lg ${colors.bg}`}>
           <Globe className={`w-6 h-6 ${colors.text}`} />
         </div>
-        <ExternalLink className={`w-5 h-5 text-muted-foreground group-hover:${colors.text} transition-colors opacity-0 group-hover:opacity-100`} />
+        <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100" />
       </div>
 
       {/* Content */}
-      <h3 className={`text-xl font-display font-semibold mb-2 ${colors.text} group-hover:text-glow-${color === 'cyan' ? 'cyan' : color === 'magenta' ? 'magenta' : 'purple'}`}>
+      <h3 className={`text-xl font-display font-semibold mb-2 ${colors.text}`}>
         {title}
       </h3>
       

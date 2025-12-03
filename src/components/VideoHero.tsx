@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Volume2, VolumeX } from 'lucide-react';
 
 export default function VideoHero() {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
     setIsLoaded(true);
@@ -15,6 +16,8 @@ export default function VideoHero() {
     }
   };
 
+  const videoSrc = `https://www.youtube.com/embed/15TzQSNZJc0?autoplay=1&mute=${isMuted ? 1 : 0}&loop=1&playlist=15TzQSNZJc0&controls=0&showinfo=0&rel=0&modestbranding=1`;
+
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
       {/* Video Container */}
@@ -24,7 +27,8 @@ export default function VideoHero() {
         }`}
       >
         <iframe
-          src="https://www.youtube.com/embed/15TzQSNZJc0?autoplay=1&mute=1&loop=1&playlist=15TzQSNZJc0&controls=0&showinfo=0&rel=0&modestbranding=1"
+          key={isMuted ? 'muted' : 'unmuted'}
+          src={videoSrc}
           title="Portfolio Introduction"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
@@ -37,6 +41,15 @@ export default function VideoHero() {
         
         {/* Scanline effect */}
         <div className="absolute inset-0 pointer-events-none scanline opacity-30" />
+
+        {/* Audio Toggle Button */}
+        <button
+          onClick={() => setIsMuted(!isMuted)}
+          className="absolute bottom-4 right-4 z-10 p-3 rounded-full bg-background/80 backdrop-blur-sm border border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+          aria-label={isMuted ? 'Unmute video' : 'Mute video'}
+        >
+          {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+        </button>
       </div>
 
       {/* Title */}
