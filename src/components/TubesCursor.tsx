@@ -118,7 +118,7 @@ export default function TubesCursor() {
     <div className="fixed inset-0 pointer-events-none z-30">
       <Canvas
         camera={{ position: [0, 0, 5], fov: 75 }}
-        style={{ background: 'transparent' }}
+        style={{ background: 'transparent', pointerEvents: 'none' }}
       >
         <TubesEffect />
       </Canvas>

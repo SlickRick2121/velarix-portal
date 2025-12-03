@@ -37,20 +37,20 @@ const Index = () => {
 
   return (
     <div className="relative min-h-screen bg-background">
-      {/* Tubes Cursor Effect */}
-      <TubesCursor />
-
       {/* 3D Background */}
       <Suspense fallback={null}>
         <ThreeBackground />
       </Suspense>
 
       {/* Content */}
-      <main className="relative z-10">
+      <main className="relative z-20">
         <VideoHero />
         <ProjectsSection />
         <Footer />
       </main>
+
+      {/* Tubes Cursor Effect - Above content but non-interactive */}
+      <TubesCursor />
     </div>
   );
 };
