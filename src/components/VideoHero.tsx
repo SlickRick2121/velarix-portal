@@ -54,14 +54,11 @@ export default function VideoHero() {
 
       {/* Title */}
       <div 
-        className={`mt-8 text-center transition-all duration-1000 delay-300 ${
+        className={`mt-12 text-center transition-all duration-1000 delay-300 ${
           isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}
       >
-        <h1 
-          className="text-4xl md:text-6xl lg:text-7xl font-display font-bold gradient-text glitch"
-          data-text="VELARIX"
-        >
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold gradient-text">
           VELARIX
         </h1>
         <p className="mt-4 text-lg md:text-xl text-muted-foreground font-body tracking-wide">
@@ -72,7 +69,7 @@ export default function VideoHero() {
       {/* Scroll indicator */}
       <button 
         onClick={scrollToProjects}
-        className={`absolute bottom-8 flex flex-col items-center gap-2 text-primary hover:text-secondary transition-all duration-500 group ${
+        className={`mt-16 flex flex-col items-center gap-2 text-primary hover:text-secondary transition-all duration-500 group ${
           isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}
         style={{ transitionDelay: '600ms' }}
